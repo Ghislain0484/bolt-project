@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LoginForm } from './components/auth/LoginForm';
+import { AdminLoginForm } from './components/auth/AdminLoginForm';
 import { Layout } from './components/layout/Layout';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { PropertiesList } from './components/properties/PropertiesList';
@@ -12,6 +13,7 @@ import { CollaborationHub } from './components/collaboration/CollaborationHub';
 import { ReportsHub } from './components/reports/ReportsHub';
 import { NotificationsCenter } from './components/notifications/NotificationsCenter';
 import { SettingsHub } from './components/settings/SettingsHub';
+import { AdminDashboard } from './components/admin/AdminDashboard';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -31,8 +33,25 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+const AdminProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { admin, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+      </div>
+    );
+  }
+
+  if (!admin) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  return <>{children}</>;
+};
 const AppContent: React.FC = () => {
-  const { user } = useAuth();
+  const { user, admin } = useAuth();
 
   return (
     <Router>
@@ -40,6 +59,10 @@ const AppContent: React.FC = () => {
         <Route 
           path="/login" 
           element={user ? <Navigate to="/dashboard" replace /> : <LoginForm />} 
+        />
+        <Route 
+          path="/admin/login" 
+          element={admin ? <Navigate to="/admin" replace /> : <AdminLoginForm />} 
         />
         <Route
           path="/dashboard"
@@ -129,6 +152,14 @@ const AppContent: React.FC = () => {
                 <SettingsHub />
               </Layout>
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <AdminProtectedRoute>
+              <AdminDashboard />
+            </AdminProtectedRoute>
           }
         />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

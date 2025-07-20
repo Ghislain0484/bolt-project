@@ -8,10 +8,14 @@ import { Owner, OwnerFormData } from '../../types/owner';
 import { useSupabaseData, useSupabaseCreate, useSupabaseDelete } from '../../hooks/useSupabaseData';
 import { dbService } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { FinancialStatements } from '../financial/FinancialStatements';
+import { Modal } from '../ui/Modal';
 
 export const OwnersList: React.FC = () => {
   const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
+  const [showFinancialStatements, setShowFinancialStatements] = useState(false);
+  const [selectedOwner, setSelectedOwner] = useState<Owner | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMaritalStatus, setFilterMaritalStatus] = useState('all');
   const [filterPropertyTitle, setFilterPropertyTitle] = useState('all');
@@ -300,6 +304,17 @@ export const OwnersList: React.FC = () => {
                   <Button variant="ghost" size="sm">
                     <Eye className="h-4 w-4" />
                   </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      setSelectedOwner(owner);
+                      setShowFinancialStatements(true);
+                    }}
+                    title="État financier"
+                  >
+                    <DollarSign className="h-4 w-4" />
+                  </Button>
                   <Button variant="ghost" size="sm">
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -393,6 +408,24 @@ export const OwnersList: React.FC = () => {
         onClose={() => setShowForm(false)}
         onSubmit={handleAddOwner}
       />
+
+      {selectedOwner && (
+        <Modal
+          isOpen={showFinancialStatements}
+          onClose={() => {
+            setShowFinancialStatements(false);
+            setSelectedOwner(null);
+          }}
+          title="État financier du propriétaire"
+          size="xl"
+        >
+          <FinancialStatements
+            entityId={selectedOwner.id}
+            entityType="owner"
+            entityName={`${selectedOwner.first_name} ${selectedOwner.last_name}`}
+          />
+        </Modal>
+      )}
     </div>
   );
 };

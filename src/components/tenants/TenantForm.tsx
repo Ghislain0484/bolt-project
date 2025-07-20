@@ -5,6 +5,8 @@ import { Input } from '../ui/Input';
 import { Modal } from '../ui/Modal';
 import { Card } from '../ui/Card';
 import { TenantFormData } from '../../types/tenant';
+import { AgencyIdGenerator } from '../../utils/idGenerator';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface TenantFormProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ export const TenantForm: React.FC<TenantFormProps> = ({
   onSubmit,
   initialData,
 }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState<TenantFormData>({
     firstName: '',
     lastName: '',
@@ -108,6 +111,12 @@ export const TenantForm: React.FC<TenantFormProps> = ({
     
     try {
       onSubmit(formData);
+      
+      // Generate unique ID for the tenant
+      if (user?.agencyId) {
+        const tenantId = AgencyIdGenerator.generateTenantId(user.agencyId, 'Agence');
+        console.log('Generated Tenant ID:', tenantId);
+      }
     } catch (error) {
       console.error('Erreur lors de la soumission:', error);
       alert('Erreur lors de l\'enregistrement. Veuillez réessayer.');

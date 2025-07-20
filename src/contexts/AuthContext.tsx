@@ -1,10 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase, dbService } from '../lib/supabase';
 import { User } from '../types';
+import { PlatformAdmin } from '../types/admin';
 
 interface AuthContextType {
   user: User | null;
+  admin: PlatformAdmin | null;
   login: (email: string, password: string) => Promise<void>;
+  loginAdmin: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -21,6 +24,7 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [admin, setAdmin] = useState<PlatformAdmin | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -31,6 +35,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
           setUser(JSON.parse(storedUser));
+          setIsLoading(false);
+          return;
+        }
+
+        // Check for demo admin in localStorage
+        const storedAdmin = localStorage.getItem('admin');
+        if (storedAdmin) {
+          setAdmin(JSON.parse(storedAdmin));
           setIsLoading(false);
           return;
         }
@@ -126,7 +138,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       ];
 
-      // Check demo credentials first
+        u.email.toLowerCase() === email.toLowerCase().trim() && 
+        u.password === password.trim()
       const demoUser = demoUsers.find(u => u.email === email && u.password === password);
       
       if (demoUser) {
@@ -143,20 +156,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         setUser(user);
         localStorage.setItem('user', JSON.stringify(user));
-        
-        // Create anonymous session for RLS if Supabase is available
-        if (supabase) {
-          try {
-            await supabase.auth.signInAnonymously();
-          } catch (error) {
-            console.warn('Could not create anonymous session:', error);
-          }
-        }
-        
         return;
       }
 
-      // If not demo user, try Supabase authentication
+      // Only try Supabase if configured and not a demo user
       if (supabase) {
         try {
           const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
@@ -187,17 +190,131 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           };
           
           setUser(user);
-          localStorage.setItem('user', JSON.stringify(user));
+          return;
+        } catch (supabaseError: any) {
+          console.error('Supabase auth error:', supabaseError);
+          // Don't throw error here, fall through to demo mode
+        }
+      }
+      
+      // If we reach here, credentials are invalid
+      throw new Error('Email ou mot de passe incorrect');
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loginAdmin = async (email: string, password: string) => {
+    setIsLoading(true);
+    try {
+      // Demo admin credentials
+      const demoAdmins = [
+        {
+          id: 'admin_super_001',
+          email: 'admin@immoplatform.ci',
+          password: 'admin123',
+          firstName: 'Super',
+          lastName: 'Admin',
+          role: 'super_admin',
+          permissions: {
+            agencyManagement: true,
+            subscriptionManagement: true,
+            platformSettings: true,
+            reports: true,
+            userSupport: true,
+          },
+        },
+        {
+          id: 'admin_support_001',
+          email: 'support@immoplatform.ci',
+          password: 'admin123',
+          firstName: 'Support',
+          lastName: 'Admin',
+          role: 'admin',
+          permissions: {
+            agencyManagement: true,
+            subscriptionManagement: false,
+            platformSettings: false,
+            reports: true,
+            userSupport: true,
+          },
+        }
+      ];
+
+      // Check demo admin credentials
+      const demoAdmin = demoAdmins.find(a => a.email === email && a.password === password);
+      
+      if (demoAdmin) {
+        const admin: PlatformAdmin = {
+          id: demoAdmin.id,
+          email: demoAdmin.email,
+          firstName: demoAdmin.firstName,
+          lastName: demoAdmin.lastName,
+          role: demoAdmin.role as 'super_admin' | 'admin',
+          permissions: demoAdmin.permissions,
+          createdAt: new Date(),
+        };
+        
+        setAdmin(admin);
+        localStorage.setItem('admin', JSON.stringify(admin));
+        
+        // Create anonymous session for RLS if Supabase is available
+        if (supabase) {
+          try {
+            await supabase.auth.signInAnonymously();
+          } catch (error) {
+            console.warn('Could not create anonymous session:', error);
+          }
+        }
+        
+        return;
+      }
+
+      // If not demo admin, try Supabase authentication
+      if (supabase) {
+        try {
+          const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+          if (authError) throw authError;
+
+          // Get admin profile from database
+          const { data: adminData, error: adminError } = await supabase
+            .from('platform_admins')
+            .select('*')
+            .eq('id', authData.user.id)
+            .single();
+
+          if (adminError) throw adminError;
+
+          const admin: PlatformAdmin = {
+            id: adminData.id,
+            email: adminData.email,
+            firstName: adminData.first_name,
+            lastName: adminData.last_name,
+            role: adminData.role,
+            permissions: adminData.permissions,
+            createdAt: new Date(adminData.created_at),
+          };
+          
+          setAdmin(admin);
+          localStorage.setItem('admin', JSON.stringify(admin));
           return;
         } catch (supabaseError) {
-          throw new Error('Identifiants incorrects');
+          throw new Error('Identifiants administrateur incorrects');
         }
       } else {
-        throw new Error('Identifiants incorrects');
+        throw new Error('Identifiants administrateur incorrects');
       }
       
     } catch (error) {
-      throw new Error('Email ou mot de passe incorrect');
+      throw new Error('Email ou mot de passe administrateur incorrect');
     } finally {
       setIsLoading(false);
     }
@@ -208,12 +325,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       supabase.auth.signOut();
     }
     setUser(null);
+    setAdmin(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('admin');
   };
 
   const value = {
     user,
+    admin,
     login,
+    loginAdmin,
     logout,
     isLoading,
   };

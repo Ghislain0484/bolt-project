@@ -10,6 +10,8 @@ import { LocationSelector } from './LocationSelector';
 import { RoomDetailsForm } from './RoomDetailsForm';
 import { ImageUploader } from './ImageUploader';
 import { StandingCalculator } from '../../utils/standingCalculator';
+import { AgencyIdGenerator } from '../../utils/idGenerator';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface PropertyFormProps {
   isOpen: boolean;
@@ -24,6 +26,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   onSubmit,
   initialData,
 }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState<PropertyFormData>({
     ownerId: '',
     agencyId: '1', // Mock agency ID
@@ -136,6 +139,12 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     
     try {
       onSubmit(formData);
+      
+      // Generate unique ID for the property
+      if (user?.agencyId) {
+        const propertyId = AgencyIdGenerator.generatePropertyId(user.agencyId, 'Agence');
+        console.log('Generated Property ID:', propertyId);
+      }
     } catch (error) {
       console.error('Erreur lors de la soumission:', error);
       alert('Erreur lors de l\'enregistrement. Veuillez réessayer.');
@@ -344,7 +353,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 <p className="text-sm text-gray-500">Basé sur les détails des pièces</p>
               </div>
               <Badge variant={getStandingColor(formData.standing)} size="md">
-                {formData.standing.charAt(0).toUpperCase() + formData.standing.slice(1)} standing
+                placeholder="Rechercher et sélectionner le propriétaire"
               </Badge>
             </div>
           </div>

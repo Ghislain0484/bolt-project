@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import { Building2, Eye, EyeOff } from 'lucide-react';
+import { Shield, Eye, EyeOff, Building2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Card } from '../ui/Card';
 
-export const LoginForm: React.FC = () => {
+export const AdminLoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { login } = useAuth();
+  const { loginAdmin } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +20,7 @@ export const LoginForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      await loginAdmin(email, password);
     } catch (err) {
       setError('Email ou mot de passe incorrect');
     } finally {
@@ -29,28 +29,26 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center">
-            <div className="flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full">
-              <Building2 className="h-8 w-8 text-white" />
+            <div className="flex items-center justify-center w-16 h-16 bg-red-600 rounded-full">
+              <Shield className="h-8 w-8 text-white" />
             </div>
           </div>
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            ImmoPlatform
+            Administration Plateforme
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Connectez-vous à votre espace de gestion immobilière
+            Accès réservé aux administrateurs système
           </p>
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
-            <p className="text-sm text-blue-800 font-medium mb-2">Comptes de démonstration :</p>
-            <div className="text-xs text-blue-700 space-y-1">
-              <p><strong>Directeur :</strong> marie.kouassi@agence.com</p>
-              <p><strong>Manager :</strong> manager1@agence.com</p>
-              <p><strong>Agent :</strong> agent1@agence.com</p>
-              <p><em>Mot de passe :</em> <strong>demo123</strong> (pour tous les comptes)</p>
-              <p className="text-blue-600 font-medium mt-2">⚠️ Utilisez exactement ces identifiants</p>
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-sm text-red-800 font-medium mb-2">Comptes administrateur :</p>
+            <div className="text-xs text-red-700 space-y-1">
+              <p><strong>Super Admin :</strong> admin@immoplatform.ci</p>
+              <p><strong>Admin :</strong> support@immoplatform.ci</p>
+              <p><em>Mot de passe :</em> admin123 (pour tous les comptes)</p>
             </div>
           </div>
         </div>
@@ -64,13 +62,12 @@ export const LoginForm: React.FC = () => {
             )}
 
             <Input
-              label="Email"
+              label="Email administrateur"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value.trim())}
+              onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="votre@email.com"
-              autoComplete="email"
+              placeholder="admin@immoplatform.ci"
             />
 
             <div className="relative">
@@ -78,10 +75,9 @@ export const LoginForm: React.FC = () => {
                 label="Mot de passe"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value.trim())}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                autoComplete="current-password"
               />
               <button
                 type="button"
@@ -96,33 +92,14 @@ export const LoginForm: React.FC = () => {
               </button>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Se souvenir de moi
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                  Mot de passe oublié ?
-                </a>
-              </div>
-            </div>
-
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-red-600 hover:bg-red-700"
               size="lg"
               isLoading={isLoading}
             >
-              Se connecter
+              <Shield className="h-4 w-4 mr-2" />
+              Accéder au Dashboard Admin
             </Button>
           </form>
 
@@ -133,14 +110,15 @@ export const LoginForm: React.FC = () => {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">
-                  Pas encore de compte ?
+                  Accès agences
                 </span>
               </div>
             </div>
 
             <div className="mt-6 text-center">
-              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                Demander l'accès à votre agence
+              <a href="/login" className="font-medium text-blue-600 hover:text-blue-500 flex items-center justify-center">
+                <Building2 className="h-4 w-4 mr-2" />
+                Connexion Agences
               </a>
             </div>
           </div>

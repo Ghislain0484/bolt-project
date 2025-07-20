@@ -31,7 +31,56 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
-  const { user } = useAuth();
+  const { user, admin } = useAuth();
+  
+  // If admin is logged in, show admin navigation
+  if (admin) {
+    return (
+      <div className={cn(
+        'bg-red-900 text-white transition-all duration-300 flex flex-col',
+        isCollapsed ? 'w-16' : 'w-64'
+      )}>
+        <div className="p-4">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <Shield className="h-8 w-8 text-red-400" />
+            </div>
+            {!isCollapsed && (
+              <div className="ml-3">
+                <h1 className="text-lg font-semibold">Admin Panel</h1>
+                <p className="text-sm text-red-400">Gestion Plateforme</p>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex-1 px-2 py-4">
+          <p className="text-red-300 text-sm px-2 mb-4">
+            {!isCollapsed && 'Dashboard Administrateur'}
+          </p>
+        </div>
+
+        {!isCollapsed && (
+          <div className="p-4 border-t border-red-700">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center">
+                  <span className="text-sm font-medium">
+                    {admin.firstName?.[0]}{admin.lastName?.[0]}
+                  </span>
+                </div>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium">{admin.firstName} {admin.lastName}</p>
+                <p className="text-xs text-red-400 capitalize">{admin.role}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+  
   const navigation = getNavigation(user?.role || 'agent');
 
   return (

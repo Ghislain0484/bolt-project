@@ -8,7 +8,10 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
-  const { user, logout } = useAuth();
+  const { user, admin, logout } = useAuth();
+  
+  const currentUser = user || admin;
+  const isAdmin = !!admin;
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
@@ -40,13 +43,14 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
 
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
+              <div className={`h-8 w-8 rounded-full ${isAdmin ? 'bg-red-500' : 'bg-blue-500'} flex items-center justify-center`}>
                 <span className="text-sm font-medium text-white">
-                  {user?.firstName?.[0]}{user?.lastName?.[0]}
+                  {currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}
                 </span>
               </div>
               <span className="text-sm font-medium text-gray-700">
-                {user?.firstName} {user?.lastName}
+                {currentUser?.firstName} {currentUser?.lastName}
+                {isAdmin && <span className="text-xs text-red-600 block">Admin</span>}
               </span>
             </div>
             

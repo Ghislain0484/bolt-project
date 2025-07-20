@@ -8,10 +8,15 @@ import { Tenant, TenantFormData } from '../../types/tenant';
 import { useSupabaseData, useSupabaseCreate, useSupabaseDelete } from '../../hooks/useSupabaseData';
 import { dbService } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { ReceiptGenerator } from '../receipts/ReceiptGenerator';
+import { FinancialStatements } from '../financial/FinancialStatements';
 
 export const TenantsList: React.FC = () => {
   const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
+  const [showReceiptGenerator, setShowReceiptGenerator] = useState(false);
+  const [showFinancialStatements, setShowFinancialStatements] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMaritalStatus, setFilterMaritalStatus] = useState('all');
   const [filterPaymentStatus, setFilterPaymentStatus] = useState('all');
@@ -240,6 +245,28 @@ export const TenantsList: React.FC = () => {
                   <Button variant="ghost" size="sm">
                     <Eye className="h-4 w-4" />
                   </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      setSelectedTenant(tenant);
+                      setShowReceiptGenerator(true);
+                    }}
+                    title="Générer quittance"
+                  >
+                    <FileText className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      setSelectedTenant(tenant);
+                      setShowFinancialStatements(true);
+                    }}
+                    title="État financier"
+                  >
+                    <DollarSign className="h-4 w-4" />
+                  </Button>
                   <Button variant="ghost" size="sm">
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -347,6 +374,33 @@ export const TenantsList: React.FC = () => {
         onClose={() => setShowForm(false)}
         onSubmit={handleAddTenant}
       />
+
+      <ReceiptGenerator
+        isOpen={showReceiptGenerator}
+        onClose={() => {
+          setShowReceiptGenerator(false);
+          setSelectedTenant(null);
+        }}
+        tenantId={selectedTenant?.id}
+      />
+
+      {selectedTenant && (
+        <Modal
+          isOpen={showFinancialStatements}
+          onClose={() => {
+            setShowFinancialStatements(false);
+            setSelectedTenant(null);
+          }}
+          title="État financier du locataire"
+          size="xl"
+        >
+          <FinancialStatements
+            entityId={selectedTenant.id}
+            entityType="tenant"
+            entityName={`${selectedTenant.first_name} ${selectedTenant.last_name}`}
+          />
+        </Modal>
+      )}
     </div>
   );
 };

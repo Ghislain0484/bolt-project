@@ -5,6 +5,8 @@ import { Input } from '../ui/Input';
 import { Modal } from '../ui/Modal';
 import { Card } from '../ui/Card';
 import { OwnerFormData } from '../../types/owner';
+import { AgencyIdGenerator } from '../../utils/idGenerator';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface OwnerFormProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ export const OwnerForm: React.FC<OwnerFormProps> = ({
   onSubmit,
   initialData,
 }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState<OwnerFormData>({
     firstName: '',
     lastName: '',
@@ -132,6 +135,12 @@ export const OwnerForm: React.FC<OwnerFormProps> = ({
     try {
       onSubmit(formData);
       onClose();
+      
+      // Generate unique ID for the owner
+      if (user?.agencyId) {
+        const ownerId = AgencyIdGenerator.generateOwnerId(user.agencyId, 'Agence');
+        console.log('Generated Owner ID:', ownerId);
+      }
     } catch (error) {
       console.error('Erreur lors de la soumission:', error);
       alert('Erreur lors de l\'enregistrement du propriétaire. Veuillez vérifier vos données et réessayer.');
