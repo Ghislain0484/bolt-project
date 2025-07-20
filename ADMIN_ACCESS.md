@@ -4,7 +4,7 @@
 
 ### **1. URL d'Accès :**
 ```
-https://votre-site.vercel.app/admin/login
+https://www.maurelagohi.xyz/admin/login
 ```
 
 ### **2. Comptes Administrateur Disponibles :**

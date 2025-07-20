@@ -9,7 +9,8 @@ import {
   MessageSquare, 
   Settings,
   BarChart3,
-  Bell
+  Bell,
+  Shield
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { cn } from '../../utils/cn';

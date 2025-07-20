@@ -162,6 +162,14 @@ const AppContent: React.FC = () => {
             </AdminProtectedRoute>
           }
         />
+        <Route
+          path="/admin/*"
+          element={
+            <AdminProtectedRoute>
+              <AdminDashboard />
+            </AdminProtectedRoute>
+          }
+        />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Router>
