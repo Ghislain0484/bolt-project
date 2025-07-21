@@ -4,7 +4,7 @@
 
 ### **1. URL d'Accès :**
 ```
-https://www.maurelagohi.xyz/admin/login
+https://www.maurelagohi.xyz/admin
 ```
 
 ### **2. Comptes Administrateur Disponibles :**
@@ -54,7 +54,7 @@ https://www.maurelagohi.xyz/admin/login
 ## 🔄 Processus de Connexion
 
 ### **Étape 1 : Accès**
-1. Aller sur `/admin/login`
+1. Aller sur `/admin`
 2. Utiliser un des comptes admin
 3. Cliquer sur "Accéder au Dashboard Admin"
 
@@ -102,4 +102,4 @@ Le dashboard admin est **responsive** et fonctionne sur :
 
 **🎯 Le dashboard admin est maintenant prêt et sécurisé !**
 
-**Accès direct :** [/admin/login](/admin/login)
+**Accès direct :** [/admin](/admin)

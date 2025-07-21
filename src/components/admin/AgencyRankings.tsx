@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Award, Trophy, Medal, Star, TrendingUp, Users, Building2, DollarSign } from 'lucide-react';
+import { Award, Trophy, Medal, Star, TrendingUp, Users, Building2, DollarSign, Calendar } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';

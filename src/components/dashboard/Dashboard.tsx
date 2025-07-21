@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   Building2, 
   Users, 
@@ -8,14 +8,24 @@ import {
   TrendingUp,
   AlertTriangle,
   CheckCircle,
-  Clock
+  Clock,
+  Receipt,
+  Eye,
+  Edit,
+  Printer
 } from 'lucide-react';
 import { StatsCard } from './StatsCard';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
+import { Button } from '../ui/Button';
+import { Modal } from '../ui/Modal';
+import { useState } from 'react';
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [showAllActivities, setShowAllActivities] = useState(false);
+  const [showAllRentals, setShowAllRentals] = useState(false);
+  const [showAllPayments, setShowAllPayments] = useState(false);
 
   const stats = [
     {
@@ -110,6 +120,47 @@ export const Dashboard: React.FC = () => {
     },
   ];
 
+  const recentPayments = [
+    {
+      id: 1,
+      type: 'received',
+      tenant: 'Aya Kouassi',
+      property: 'Villa Cocody - Angré',
+      amount: 450000,
+      date: '2024-03-10',
+      receiptNumber: 'IMEX-202403-001',
+      status: 'completed',
+    },
+    {
+      id: 2,
+      type: 'paid',
+      owner: 'Marie Bamba',
+      property: 'Appartement Plateau',
+      amount: 288000,
+      date: '2024-03-09',
+      receiptNumber: 'IMEX-202403-002',
+      status: 'completed',
+    },
+    {
+      id: 3,
+      type: 'received',
+      tenant: 'Jean-Baptiste Kone',
+      property: 'Maison Yopougon',
+      amount: 280000,
+      date: '2024-03-08',
+      receiptNumber: 'IMEX-202403-003',
+      status: 'completed',
+    },
+  ];
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'XOF',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'success':
@@ -165,7 +216,10 @@ export const Dashboard: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900">
               Activités Récentes
             </h3>
-            <button className="text-sm text-blue-600 hover:text-blue-800">
+            <button 
+              onClick={() => setShowAllActivities(true)}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
               Voir tout
             </button>
           </div>
@@ -200,7 +254,10 @@ export const Dashboard: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900">
               Loyers à Venir
             </h3>
-            <button className="text-sm text-blue-600 hover:text-blue-800">
+            <button 
+              onClick={() => setShowAllRentals(true)}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
               Voir tout
             </button>
           </div>
@@ -227,6 +284,71 @@ export const Dashboard: React.FC = () => {
           </div>
         </Card>
       </div>
+
+      {/* Recent Payments Section */}
+      <Card>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Paiements Récents
+          </h3>
+          <div className="flex items-center space-x-2">
+            <button 
+              onClick={() => setShowAllPayments(true)}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              Voir tout
+            </button>
+            <Link to="/receipts">
+              <Button variant="outline" size="sm">
+                <Receipt className="h-4 w-4 mr-1" />
+                Gestion Quittances
+              </Button>
+            </Link>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          {recentPayments.map((payment) => (
+            <div key={payment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <div className={`w-3 h-3 rounded-full ${
+                  payment.type === 'received' ? 'bg-green-500' : 'bg-blue-500'
+                }`}></div>
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {payment.type === 'received' 
+                      ? `Loyer reçu - ${payment.tenant}` 
+                      : `Reversement - ${payment.owner}`
+                    }
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {payment.property} • {payment.receiptNumber}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="text-right">
+                  <p className="font-medium text-gray-900">
+                    {formatCurrency(payment.amount)}
+                  </p>
+                  <p className="text-sm text-gray-500">{payment.date}</p>
+                </div>
+                <div className="flex space-x-1">
+                  <Button variant="ghost" size="sm">
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <Printer className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
 
       {/* Quick Actions */}
       <Card>
@@ -279,6 +401,145 @@ export const Dashboard: React.FC = () => {
           </button>
         </div>
       </Card>
+
+      {/* Modals */}
+      <Modal
+        isOpen={showAllActivities}
+        onClose={() => setShowAllActivities(false)}
+        title="Toutes les activités"
+        size="lg"
+      >
+        <div className="space-y-4">
+          {recentActivities.concat([
+            {
+              id: 5,
+              type: 'contract_signed',
+              title: 'Contrat signé',
+              description: 'Nouveau contrat - Appartement 4C',
+              time: '4 h',
+              status: 'success',
+            },
+            {
+              id: 6,
+              type: 'property_visit',
+              title: 'Visite programmée',
+              description: 'Villa Marcory - Demain 14h',
+              time: '6 h',
+              status: 'info',
+            }
+          ]).map((activity) => (
+            <div key={activity.id} className="flex items-start space-x-3 p-3 border border-gray-200 rounded-lg">
+              <div className="flex-shrink-0 mt-1">
+                {getStatusIcon(activity.status)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {activity.title}
+                  </p>
+                  <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                    {activity.time}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 truncate">
+                  {activity.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showAllRentals}
+        onClose={() => setShowAllRentals(false)}
+        title="Tous les loyers à venir"
+        size="lg"
+      >
+        <div className="space-y-3">
+          {upcomingRentals.concat([
+            {
+              id: 4,
+              property: 'Studio Treichville',
+              tenant: 'Fatou Diallo',
+              dueDate: '2024-03-28',
+              amount: '180,000 FCFA',
+              status: 'upcoming',
+            },
+            {
+              id: 5,
+              property: 'Villa Bingerville',
+              tenant: 'Kouadio Yves',
+              dueDate: '2024-03-30',
+              amount: '520,000 FCFA',
+              status: 'upcoming',
+            }
+          ]).map((rental) => (
+            <div key={rental.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {rental.property}
+                </p>
+                <p className="text-sm text-gray-500 truncate">
+                  {rental.tenant} • {rental.dueDate}
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-900">
+                  {rental.amount}
+                </span>
+                {getStatusBadge(rental.status)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showAllPayments}
+        onClose={() => setShowAllPayments(false)}
+        title="Tous les paiements récents"
+        size="lg"
+      >
+        <div className="space-y-3">
+          {recentPayments.map((payment) => (
+            <div key={payment.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <div className={`w-4 h-4 rounded-full ${
+                  payment.type === 'received' ? 'bg-green-500' : 'bg-blue-500'
+                }`}></div>
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {payment.type === 'received' 
+                      ? `Loyer reçu - ${payment.tenant}` 
+                      : `Reversement - ${payment.owner}`
+                    }
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {payment.property} • {payment.receiptNumber} • {payment.date}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="font-medium text-gray-900">
+                  {formatCurrency(payment.amount)}
+                </span>
+                <div className="flex space-x-1">
+                  <Button variant="ghost" size="sm">
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <Printer className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Modal>
     </div>
   );
 };

@@ -13,6 +13,7 @@ import { CollaborationHub } from './components/collaboration/CollaborationHub';
 import { ReportsHub } from './components/reports/ReportsHub';
 import { NotificationsCenter } from './components/notifications/NotificationsCenter';
 import { SettingsHub } from './components/settings/SettingsHub';
+import { ReceiptsList } from './components/receipts/ReceiptsList';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -115,6 +116,16 @@ const AppContent: React.FC = () => {
           }
         />
         <Route
+          path="/receipts"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ReceiptsList />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/collaboration"
           element={
             <ProtectedRoute>
@@ -156,14 +167,6 @@ const AppContent: React.FC = () => {
         />
         <Route
           path="/admin"
-          element={
-            <AdminProtectedRoute>
-              <AdminDashboard />
-            </AdminProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/*"
           element={
             <AdminProtectedRoute>
               <AdminDashboard />

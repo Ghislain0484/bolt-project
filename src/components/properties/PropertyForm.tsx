@@ -12,6 +12,8 @@ import { ImageUploader } from './ImageUploader';
 import { StandingCalculator } from '../../utils/standingCalculator';
 import { AgencyIdGenerator } from '../../utils/idGenerator';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSupabaseData } from '../../hooks/useSupabaseData';
+import { dbService } from '../../lib/supabase';
 
 interface PropertyFormProps {
   isOpen: boolean;
@@ -28,7 +30,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
 }) => {
   const { user } = useAuth();
   const [formData, setFormData] = useState<PropertyFormData>({
-    ownerId: '',
+    ownerId: initialData?.ownerId || '',
     agencyId: '1', // Mock agency ID
     title: '',
     description: '',
@@ -54,6 +56,15 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [showRoomForm, setShowRoomForm] = useState(false);
   const [editingRoom, setEditingRoom] = useState<number | null>(null);
+  const [ownerSearch, setOwnerSearch] = useState('');
+
+  // Load owners for selection
+  const { data: owners } = useSupabaseData(dbService.getOwners);
+
+  const filteredOwners = owners.filter(owner =>
+    `${owner.first_name} ${owner.last_name}`.toLowerCase().includes(ownerSearch.toLowerCase()) ||
+    owner.phone.includes(ownerSearch)
+  );
 
   const faciliteOptions = [
     'École primaire', 'École secondaire', 'Université', 'Hôpital', 'Clinique',
@@ -335,16 +346,62 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description générale
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => updateFormData({ description: e.target.value })}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Description détaillée du bien..."
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Propriétaire du bien *
+                </label>
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    placeholder="Rechercher un propriétaire par nom ou téléphone..."
+                    value={ownerSearch}
+                    onChange={(e) => setOwnerSearch(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {ownerSearch && (
+                    <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md">
+                      {filteredOwners.length > 0 ? (
+                        filteredOwners.map((owner) => (
+                          <button
+                            key={owner.id}
+                            type="button"
+                            onClick={() => {
+                              updateFormData({ ownerId: owner.id });
+                              setOwnerSearch(`${owner.first_name} ${owner.last_name} - ${owner.phone}`);
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-gray-100 border-b border-gray-200 last:border-b-0"
+                          >
+                            <div className="font-medium">{owner.first_name} {owner.last_name}</div>
+                            <div className="text-sm text-gray-500">{owner.phone} - {owner.city}</div>
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-3 py-2 text-gray-500 text-sm">
+                          Aucun propriétaire trouvé
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {formData.ownerId && (
+                    <div className="text-sm text-green-600">
+                      ✓ Propriétaire sélectionné
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description générale
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => updateFormData({ description: e.target.value })}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Description détaillée du bien..."
+                />
+              </div>
             </div>
 
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
@@ -353,7 +410,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 <p className="text-sm text-gray-500">Basé sur les détails des pièces</p>
               </div>
               <Badge variant={getStandingColor(formData.standing)} size="md">
-                placeholder="Rechercher et sélectionner le propriétaire"
+                {formData.standing.charAt(0).toUpperCase() + formData.standing.slice(1)}
               </Badge>
             </div>
           </div>

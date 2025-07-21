@@ -138,8 +138,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       ];
 
-        u.email.toLowerCase() === email.toLowerCase().trim() && 
-        u.password === password.trim()
       const demoUser = demoUsers.find(u => u.email === email && u.password === password);
       
       if (demoUser) {

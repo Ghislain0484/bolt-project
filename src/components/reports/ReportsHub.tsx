@@ -1,8 +1,33 @@
 import React, { useState } from 'react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  LineElement,
+  PointElement,
+} from 'chart.js';
+import { Bar, Pie, Line } from 'react-chartjs-2';
 import { BarChart3, PieChart, TrendingUp, Download, Calendar, DollarSign, Home, Users } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  LineElement,
+  PointElement
+);
 
 export const ReportsHub: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('month');
@@ -30,6 +55,76 @@ export const ReportsHub: React.FC = () => {
         { month: 'Mar', revenue: 2450000, commissions: 245000 }
       ]
     }
+  };
+
+  // Chart data
+  const revenueChartData = {
+    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
+    datasets: [
+      {
+        label: 'Revenus (FCFA)',
+        data: [1800000, 2100000, 2450000, 2200000, 2600000, 2800000],
+        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+        borderColor: 'rgba(59, 130, 246, 1)',
+        borderWidth: 1,
+      },
+      {
+        label: 'Commissions (FCFA)',
+        data: [180000, 210000, 245000, 220000, 260000, 280000],
+        backgroundColor: 'rgba(16, 185, 129, 0.5)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const propertyTypeData = {
+    labels: ['Villas', 'Appartements', 'Terrains', 'Immeubles', 'Autres'],
+    datasets: [
+      {
+        data: [45, 35, 10, 7, 3],
+        backgroundColor: [
+          'rgba(59, 130, 246, 0.8)',
+          'rgba(16, 185, 129, 0.8)',
+          'rgba(245, 158, 11, 0.8)',
+          'rgba(239, 68, 68, 0.8)',
+          'rgba(139, 92, 246, 0.8)',
+        ],
+        borderWidth: 2,
+        borderColor: '#fff',
+      },
+    ],
+  };
+
+  const occupancyData = {
+    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
+    datasets: [
+      {
+        label: 'Taux d\'occupation (%)',
+        data: [85, 87, 89, 88, 91, 87],
+        borderColor: 'rgba(59, 130, 246, 1)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4,
+        fill: true,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
   };
 
   const formatCurrency = (amount: number) => {
@@ -226,14 +321,8 @@ export const ReportsHub: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
                   Évolution des revenus
                 </h3>
-                <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <BarChart3 className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-500">Graphique des revenus mensuels</p>
-                    <p className="text-sm text-gray-400 mt-2">
-                      Intégration Chart.js ou Recharts recommandée
-                    </p>
-                  </div>
+                <div className="h-64">
+                  <Bar data={revenueChartData} options={chartOptions} />
                 </div>
               </div>
             </Card>
@@ -243,18 +332,24 @@ export const ReportsHub: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
                   Répartition par type de bien
                 </h3>
-                <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <PieChart className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-500">Graphique en secteurs</p>
-                    <p className="text-sm text-gray-400 mt-2">
-                      Villas: 45% • Appartements: 35% • Autres: 20%
-                    </p>
-                  </div>
+                <div className="h-64">
+                  <Pie data={propertyTypeData} options={{ responsive: true, maintainAspectRatio: false }} />
                 </div>
               </div>
             </Card>
           </div>
+
+          {/* Additional Chart */}
+          <Card>
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Taux d'occupation mensuel
+              </h3>
+              <div className="h-64">
+                <Line data={occupancyData} options={chartOptions} />
+              </div>
+            </div>
+          </Card>
 
           {/* Performance Indicators */}
           <Card>
